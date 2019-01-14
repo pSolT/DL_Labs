@@ -30,6 +30,18 @@ def _bytes_feature(value):
         value = six.binary_type(value, encoding='utf-8') 
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
+def deserialize_image_record(record):
+    feature_map = {
+            'label': tf.FixedLenFeature([ ], tf.int64,-1),
+            'text_label': tf.FixedLenFeature([ ], tf.string, ''),
+            'image': tf.FixedLenFeature([ ], tf.string, ''),
+    }
+    with tf.name_scope('deserialize_image_record'):
+        obj = tf.parse_single_example(record, feature_map)
+        imgdata = obj['image']
+        label   = tf.cast(obj['label'], tf.int32)
+        text_label =  obj['text_label']
+        return imgdata, label, text_label
 
 
 def convert_to_tfrecord(dataset_name, data_directory, class_map, segments=1, directories_as_labels=True, files='**/*.jpg'):
